@@ -18,8 +18,8 @@ public class TaskController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createTask(@RequestBody TaskRequestVO request) {
-        taskService.createTask(request);
-        return ResponseEntity.ok("Task created successfully");
+        String message = taskService.createTask(request);
+        return ResponseEntity.ok(message);
     }
 
     @PostMapping("/approve")

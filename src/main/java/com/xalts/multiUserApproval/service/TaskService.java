@@ -6,6 +6,7 @@ import com.xalts.multiUserApproval.dao.entity.UserApproval;
 import com.xalts.multiUserApproval.dao.repo.TaskRepository;
 import com.xalts.multiUserApproval.dao.repo.UserApprovalRepository;
 import com.xalts.multiUserApproval.dao.repo.UserRepository;
+import com.xalts.multiUserApproval.impl.MailSenderImpl;
 import com.xalts.multiUserApproval.vo.ApprovalRequestVO;
 import com.xalts.multiUserApproval.vo.TaskRequestVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,10 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
-    public void createTask(TaskRequestVO request) {
+    @Autowired
+    private MailSenderImpl mailSender;
+
+    public String createTask(TaskRequestVO request) {
         Task task = new Task();
         task.setDescription(request.getDescription());
         task.setStatus("PENDING");
@@ -34,6 +38,16 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Creator not found"));
         task.setCreator(creator);
         taskRepository.save(task);
+        String respMessage = "Task Created";
+        if (!request.getUserEmails().isEmpty()){
+            for (String email : request.getUserEmails()){
+                String messageDesc = "A new task is created by " + request.getCreatorId();
+                mailSender.sendEmail(email, "Task Created", messageDesc);
+            }
+            respMessage = respMessage + " And Mail Sent";
+        }
+
+        return respMessage;
     }
 
     public String approveTask(ApprovalRequestVO request) {
