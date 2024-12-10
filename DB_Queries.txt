@@ -1,0 +1,25 @@
+CREATE TABLE users (
+    user_id VARCHAR(12) PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255)
+);
+
+
+CREATE TABLE tasks (
+    tid SERIAL PRIMARY KEY,
+    description TEXT,
+    status VARCHAR(50),
+    creator_id VARCHAR(12) REFERENCES users(user_id),
+    approver_emails TEXT[],
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_approvals (
+    uaid SERIAL PRIMARY KEY,
+    task_id BIGINT REFERENCES tasks(tid),
+    approver_email VARCHAR(255) REFERENCES users(email),
+    comment TEXT,
+    is_approved BOOLEAN,
+    approved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
