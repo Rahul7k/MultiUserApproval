@@ -8,6 +8,6 @@ import java.util.List;
 @Getter @Setter
 public class TaskRequestVO {
     private String description;
-    private Long creatorId;
-    private List<Long> approverIds;
+    private String creatorId;
+    private List<String> approverIds;
 }

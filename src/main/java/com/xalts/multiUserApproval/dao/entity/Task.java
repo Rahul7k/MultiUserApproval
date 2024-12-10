@@ -27,9 +27,8 @@ public class Task {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @ElementCollection
     @Column(name = "approver_ids")
-    private List<Long> approverIds;
+    private List<String> approverIds;
 
     @CreationTimestamp
     @Column(name = "created_at")

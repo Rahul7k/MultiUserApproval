@@ -24,8 +24,8 @@ public class TaskController {
 
     @PostMapping("/approve")
     public ResponseEntity<String> approveTask(@RequestBody ApprovalRequestVO request) {
-        taskService.approveTask(request);
-        return ResponseEntity.ok("Task approved successfully");
+        String message = taskService.approveTask(request);
+        return ResponseEntity.ok(message);
     }
 
 }

@@ -2,12 +2,12 @@ package com.xalts.multiUserApproval.service;
 
 import com.xalts.multiUserApproval.dao.entity.User;
 import com.xalts.multiUserApproval.dao.repo.UserRepository;
+import com.xalts.multiUserApproval.mapper.UserMapper;
 import com.xalts.multiUserApproval.vo.LoginRequestVO;
+import com.xalts.multiUserApproval.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 public class UserService {
@@ -17,18 +17,19 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String registerUser(User user) {
+    @Autowired
+    private UserMapper userMapper;
+
+    public String registerUser(UserVO userVo) {
+        User user = userMapper.userVoToUser(userVo);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
-        return "User registered successfully with ID: " + user.getUid();
+        return "User registered successfully with ID: " + user.getUserId();
     }
 
     public String authenticateUser(LoginRequestVO request) {
-        User user = new User();
-        if (Objects.nonNull(request.getLoginId())){
-            user = userRepository.findByLoginId(request.getLoginId());
-        }
-
+        User user = userRepository.findById(request.getLoginId())
+                .orElseThrow(() -> new RuntimeException("Invalid login ID"));
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return "Login successful";
         }

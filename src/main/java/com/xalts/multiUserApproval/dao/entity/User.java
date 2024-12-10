@@ -4,14 +4,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "users")
 @Getter @Setter
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "uid")
-    private Long uid;
+    @Column(unique = true, name = "user_id")
+    private String userId;
 
     @Column(name = "name")
     private String name;
@@ -19,10 +21,14 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Column(unique = true, name = "login_id")
-    private String loginId;
-
     @Column(name = "password")
     private String password;
+
+    @PrePersist
+    private void generateUserId() {
+        if (this.userId == null) {
+            this.userId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        }
+    }
 
 }

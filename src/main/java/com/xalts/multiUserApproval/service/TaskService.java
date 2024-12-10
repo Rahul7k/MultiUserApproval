@@ -11,6 +11,10 @@ import com.xalts.multiUserApproval.vo.TaskRequestVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.Console;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class TaskService {
     @Autowired
@@ -32,19 +36,41 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public void approveTask(ApprovalRequestVO request) {
+    public String approveTask(ApprovalRequestVO request) {
         Task task = taskRepository.findById(request.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        UserApproval approval = new UserApproval();
-        approval.setTask(task);
-        approval.setApprover(request.getApprover());
-        approval.setComment(request.getComment());
-        approval.setApproved(true);
-        approvalRepository.save(approval);
+        List<String> approverIds = new ArrayList<>();
+        if (task.getApproverIds() != null) {
+            approverIds = task.getApproverIds();
+        }
+        if(approverIds.isEmpty() || !approverIds.contains(request.getApprover().getUserId())){
+            approverIds.add(request.getApprover().getUserId());
+            task.setApproverIds(approverIds);
+            UserApproval approval = new UserApproval();
+            approval.setTask(task);
+            approval.setApprover(request.getApprover());
+            approval.setComment(request.getComment());
+            approval.setApproved(true);
+            approvalRepository.save(approval);
+            updateTaskTable(task);
 
-        if (approvalRepository.countByTaskId(task.getTid()) >= 3) {
+            int taskCount = approvalRepository.countByTaskId(task.getTid());
+            if (taskCount >= 3) {
+                updateTaskStatus(task);
+            }
+            return "Task Successfully Approved By : " + request.getApprover().getUserId();
+        } else {
+            return "Task is Already Approved by the user : " + request.getApprover().getUserId();
+        }
+
+    }
+
+    public void updateTaskTable(Task task){
+        taskRepository.save(task);
+    }
+
+    public void updateTaskStatus(Task task){
             task.setStatus("APPROVED");
             taskRepository.save(task);
-        }
     }
 }
