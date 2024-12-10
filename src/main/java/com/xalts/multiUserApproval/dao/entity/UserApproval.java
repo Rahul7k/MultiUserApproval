@@ -20,9 +20,8 @@ public class UserApproval {
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @ManyToOne
-    @JoinColumn(name = "approver_id")
-    private User approver;
+    @Column(name = "approver_email")
+    private String approverEmail;
 
     @Column(name = "comment")
     private String comment;

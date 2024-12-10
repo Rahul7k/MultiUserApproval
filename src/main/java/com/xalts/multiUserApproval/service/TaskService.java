@@ -1,5 +1,6 @@
 package com.xalts.multiUserApproval.service;
 
+import com.xalts.multiUserApproval.impl.TaskApprovalEvent;
 import com.xalts.multiUserApproval.dao.entity.Task;
 import com.xalts.multiUserApproval.dao.entity.User;
 import com.xalts.multiUserApproval.dao.entity.UserApproval;
@@ -10,10 +11,11 @@ import com.xalts.multiUserApproval.impl.MailSenderImpl;
 import com.xalts.multiUserApproval.vo.req.ApprovalReq;
 import com.xalts.multiUserApproval.vo.req.TaskReq;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TaskService {
@@ -28,18 +30,21 @@ public class TaskService {
     @Autowired
     private MailSenderImpl mailSender;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     public String createTask(TaskReq request) {
         Task task = new Task();
         task.setDescription(request.getDescription());
         task.setStatus("PENDING");
-        task.setApproverIds(request.getApproverIds());
+        task.setApproverEmails(request.getApproverEmails());
         User creator = userRepository.findById(request.getCreatorId())
                 .orElseThrow(() -> new RuntimeException("Creator not found"));
         task.setCreator(creator);
         taskRepository.save(task);
         String respMessage = "Task Created";
-        if (!request.getUserEmails().isEmpty()){
-            for (String email : request.getUserEmails()){
+        if (!request.getApproverEmails().isEmpty()){
+            for (String email : request.getApproverEmails()){
                 String messageDesc = "A new task is created by " + request.getCreatorId();
                 mailSender.sendEmail(email, "Task Created", messageDesc);
             }
@@ -52,38 +57,31 @@ public class TaskService {
     public String approveTask(ApprovalReq request) {
         Task task = taskRepository.findById(request.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found"));
-        List<String> approverIds = new ArrayList<>();
-        if (task.getApproverIds() != null) {
-            approverIds = task.getApproverIds();
+        UserApproval approval = new UserApproval();
+        approval.setTask(task);
+        approval.setApproverEmail(request.getApprover().getEmail());
+        approval.setComment(request.getComment());
+        approval.setApproved(true);
+        approvalRepository.save(approval);
+        eventPublisher.publishEvent(new TaskApprovalEvent(this, request.getApprover().getEmail()));
+
+        int taskCount = approvalRepository.countByTaskId(task.getTid());
+        if (taskCount >= 3) {
+            updateTaskStatus(task);
         }
-        if(approverIds.isEmpty() || !approverIds.contains(request.getApprover().getUserId())){
-            approverIds.add(request.getApprover().getUserId());
-            task.setApproverIds(approverIds);
-            UserApproval approval = new UserApproval();
-            approval.setTask(task);
-            approval.setApprover(request.getApprover());
-            approval.setComment(request.getComment());
-            approval.setApproved(true);
-            approvalRepository.save(approval);
-            updateTaskTable(task);
+        return "Task Successfully Approved By : " + request.getApprover().getEmail();
 
-            int taskCount = approvalRepository.countByTaskId(task.getTid());
-            if (taskCount >= 3) {
-                updateTaskStatus(task);
-            }
-            return "Task Successfully Approved By : " + request.getApprover().getUserId();
-        } else {
-            return "Task is Already Approved by the user : " + request.getApprover().getUserId();
-        }
-
-    }
-
-    public void updateTaskTable(Task task){
-        taskRepository.save(task);
     }
 
     public void updateTaskStatus(Task task){
             task.setStatus("APPROVED");
             taskRepository.save(task);
+            List<String> approverEmails = task.getApproverEmails();
+            if (!Objects.isNull(approverEmails)){
+                for (String email : approverEmails){
+                    String messageDesc = "The task is successfully approved";
+                    mailSender.sendEmail(email, "Task APPROVED", messageDesc);
+                }
+            }
     }
 }

@@ -27,8 +27,8 @@ public class Task {
     @JoinColumn(name = "creator_id")
     private User creator;
 
-    @Column(name = "approver_ids")
-    private List<String> approverIds;
+    @Column(name = "approver_emails")
+    private List<String> approverEmails;
 
     @CreationTimestamp
     @Column(name = "created_at")
