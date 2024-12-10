@@ -1,11 +1,11 @@
-package com.xalts.multiUserApproval.vo;
+package com.xalts.multiUserApproval.vo.req;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class UserVO {
+public class UserReq {
 
     @JsonProperty("name")
     private String name;

@@ -7,12 +7,11 @@ import com.xalts.multiUserApproval.dao.repo.TaskRepository;
 import com.xalts.multiUserApproval.dao.repo.UserApprovalRepository;
 import com.xalts.multiUserApproval.dao.repo.UserRepository;
 import com.xalts.multiUserApproval.impl.MailSenderImpl;
-import com.xalts.multiUserApproval.vo.ApprovalRequestVO;
-import com.xalts.multiUserApproval.vo.TaskRequestVO;
+import com.xalts.multiUserApproval.vo.req.ApprovalReq;
+import com.xalts.multiUserApproval.vo.req.TaskReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class TaskService {
     @Autowired
     private MailSenderImpl mailSender;
 
-    public String createTask(TaskRequestVO request) {
+    public String createTask(TaskReq request) {
         Task task = new Task();
         task.setDescription(request.getDescription());
         task.setStatus("PENDING");
@@ -50,7 +49,7 @@ public class TaskService {
         return respMessage;
     }
 
-    public String approveTask(ApprovalRequestVO request) {
+    public String approveTask(ApprovalReq request) {
         Task task = taskRepository.findById(request.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         List<String> approverIds = new ArrayList<>();

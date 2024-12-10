@@ -1,13 +1,12 @@
-package com.xalts.multiUserApproval.vo;
+package com.xalts.multiUserApproval.vo.req;
 
-import com.xalts.multiUserApproval.dao.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter @Setter
-public class TaskRequestVO {
+public class TaskReq {
     private String description;
     private String creatorId;
     private List<String> approverIds;
