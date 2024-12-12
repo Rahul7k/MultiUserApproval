@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserApprovalRepository extends CrudRepository<UserApproval, Long> {
 
-    @Query("SELECT COUNT(u) FROM UserApproval u WHERE u.task.tid = :taskId")
+    @Query("SELECT COUNT(DISTINCT u.approverEmail) FROM UserApproval u WHERE u.task.tid = :taskId")
     int countByTaskId(Long taskId);
 }
