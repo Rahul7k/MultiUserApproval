@@ -28,6 +28,10 @@
 #User Approvals Table
 ![image](https://github.com/user-attachments/assets/e1ef3332-9cb7-447c-a8a4-d0900ba9e02f)
 
+#Notification when a task is getting Approved
+![Notification](https://github.com/user-attachments/assets/6a8a8373-c4f2-4aa7-a1b4-26988e4b436e)
+
+
 
 
 
